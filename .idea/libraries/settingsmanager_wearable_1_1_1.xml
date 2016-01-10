@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="settingsmanager-wearable-1.1.1">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/library-wear/build/intermediates/exploded-aar/com.github.fleker/settingsmanager-wearable/1.1.1/res" />
+      <root url="jar://$PROJECT_DIR$/library-wear/build/intermediates/exploded-aar/com.github.fleker/settingsmanager-wearable/1.1.1/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.fleker/settingsmanager-wearable/1.1.1/36fcc1f850dc68a9b1c86e485cb3da5d390fb2a7/settingsmanager-wearable-1.1.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
