@@ -58,4 +58,7 @@
         <item>@string/hourglass_time_time4</item>
         <item>@string/hourglass_time_time5</item>
     </string-array>
+
+    <string name="hourglass_message_mobile_resume">mobile-on</string>
+    <string name="hourglass_message_mobile_stop">mobile-off</string>
 </resources>

@@ -7,7 +7,6 @@ import android.support.annotation.Nullable;
 import android.widget.SeekBar;
 
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.felkertech.materialpreferencesactivity.MaterialPreferencesActivity;
 import com.felkertech.wearsettingsmanager.WearSettingsManager;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
