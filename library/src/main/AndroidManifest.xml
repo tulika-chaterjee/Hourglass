@@ -1,16 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.felkertech.hourglass">
+
     <application>
-        <activity android:name=".SettingsActivity"
-            android:title="Preferences"
-            android:theme="@style/AppTheme">
+        <activity
+            android:name=".SettingsActivity"
+            android:theme="@style/AppTheme"
+            android:title="Preferences">
             <intent-filter>
-                <action android:name=
-                    "com.example.android.wearable.watchface.CONFIG_DIGITAL" />
-                <category android:name=
-                    "com.google.android.wearable.watchface.category.COMPANION_CONFIGURATION" />
+                <action android:name="com.example.android.wearable.watchface.CONFIG_DIGITAL" />
+                <category android:name="com.google.android.wearable.watchface.category.COMPANION_CONFIGURATION" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
     </application>
+
 </manifest>

@@ -34,11 +34,12 @@ import android.support.wearable.watchface.WatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.Time;
 import android.view.SurfaceHolder;
-import android.view.WindowInsets;
 
 import com.felkertech.settingsmanager.SettingsManager;
 
 import java.lang.ref.WeakReference;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
@@ -49,6 +50,7 @@ import java.util.concurrent.TimeUnit;
 public abstract class HourglassWatchface extends CanvasWatchFaceService {
     private static final Typeface NORMAL_TYPEFACE =
             Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL);
+    protected SettingsManager sm;
 
     /**
      * Update rate in milliseconds for interactive mode. We update once a second since seconds are
@@ -61,13 +63,52 @@ public abstract class HourglassWatchface extends CanvasWatchFaceService {
      */
     private static final int MSG_UPDATE_TIME = 0;
 
+    private Engine mEngine;
+
     @Override
     public Engine onCreateEngine() {
-        return new Engine();
+        return mEngine = new Engine();
     }
 
     public void setInteractiveUpdateRateMs(long rate) {
         INTERACTIVE_UPDATE_RATE_MS = rate;
+    }
+
+    public abstract void onStart();
+    public abstract void onEnd();
+    public abstract void onTap(int taps);
+    public abstract void onUpdate(Canvas canvas, Time mDate);
+
+    public boolean isAmbient() {
+        return mEngine.mAmbient || sm.getBoolean(R.string.hourglass_ambient);
+    }
+    public void setWatchfaceParameters(WatchFaceStyle.Builder builder) {
+        mEngine.setWatchFaceStyle(builder.build());
+    }
+    public int getTaps() {
+        return mEngine.mTapCount;
+    }
+    public int getNormalizedHeight(double height) {
+        return (int) (height/360*mEngine.mCanvas.getHeight());
+    }
+    public int getNormalizedWidth(double width) {
+        return (int) (width/360*mEngine.mCanvas.getWidth());
+    }
+    public float getWidthScale() {
+        return mEngine.mCanvas.getWidth()/360f;
+    }
+    public float getHeightScale() {
+        return mEngine.mCanvas.getHeight()/360f;
+    }
+    public String getFormattedDate() {
+        Date d = new Date(mEngine.mTime.toMillis(false));
+        SimpleDateFormat sdf = new SimpleDateFormat(sm.getString(R.string.hourglass_date_format));
+        return sdf.format(d);
+    }
+    public String getFormattedTime() {
+        Date d = new Date(mEngine.mTime.toMillis(false));
+        SimpleDateFormat sdf = new SimpleDateFormat(sm.getString(R.string.hourglass_time_format));
+        return sdf.format(d);
     }
 
     private static class EngineHandler extends Handler {
@@ -105,8 +146,7 @@ public abstract class HourglassWatchface extends CanvasWatchFaceService {
             }
         };
         int mTapCount;
-
-        SettingsManager sm;
+        Canvas mCanvas;
 
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we
@@ -126,20 +166,14 @@ public abstract class HourglassWatchface extends CanvasWatchFaceService {
                     .build());
             mTime = new Time();
             sm = new SettingsManager(getApplicationContext());
+            onStart();
         }
 
         @Override
         public void onDestroy() {
             mUpdateTimeHandler.removeMessages(MSG_UPDATE_TIME);
+            onEnd();
             super.onDestroy();
-        }
-
-        private Paint createTextPaint(int textColor) {
-            Paint paint = new Paint();
-            paint.setColor(textColor);
-            paint.setTypeface(NORMAL_TYPEFACE);
-            paint.setAntiAlias(true);
-            return paint;
         }
 
         @Override
@@ -223,6 +257,7 @@ public abstract class HourglassWatchface extends CanvasWatchFaceService {
                 case WatchFaceService.TAP_TYPE_TAP:
                     // The user has completed the tap gesture.
                     mTapCount++;
+                    onTap(mTapCount);
                     break;
             }
             invalidate();
@@ -230,14 +265,25 @@ public abstract class HourglassWatchface extends CanvasWatchFaceService {
 
         @Override
         public void onDraw(Canvas canvas, Rect bounds) {
+            mCanvas = canvas;
             // Draw H:MM in ambient mode or H:MM:SS in interactive mode.
-            mTime.setToNow();
+            if(sm.getBoolean(R.string.hourglass_debug_mode)) {
+                mTime.set(
+                        sm.getInt(R.string.hourglass_debug_time_second),
+                        sm.getInt(R.string.hourglass_debug_time_minute),
+                        sm.getInt(R.string.hourglass_debug_time_hour),
+                        sm.getInt(R.string.hourglass_debug_date_date),
+                        sm.getInt(R.string.hourglass_debug_date_month),
+                        sm.getInt(R.string.hourglass_debug_date_year)
+                );
+            } else {
+                mTime.setToNow();
+            }
             // Draw the background.
             if (isInAmbientMode()) {
                 canvas.drawColor(Color.BLACK);
-            } else {
-                canvas.drawRect(0, 0, bounds.width(), bounds.height(), mBackgroundPaint);
             }
+            onUpdate(canvas, mTime);
         }
 
         /**
@@ -256,7 +302,7 @@ public abstract class HourglassWatchface extends CanvasWatchFaceService {
          * only run when we're visible and in interactive mode.
          */
         private boolean shouldTimerBeRunning() {
-            return isVisible() && !isInAmbientMode();
+            return isVisible() && !isAmbient();
         }
 
         /**
