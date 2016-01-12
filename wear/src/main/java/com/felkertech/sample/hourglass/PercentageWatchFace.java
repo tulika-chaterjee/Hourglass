@@ -70,7 +70,9 @@ public class PercentageWatchFace extends HourglassWatchface {
     @Override
     public void onUpdate(Canvas canvas, Time mDate) {
         canvas.drawColor(getResources().getColor(android.R.color.black));
-        double datePercent = 100d*(mDate.toMillis(false)%(1000d*60d*60d*24d))/(1000d*60d*60d*24d);
+//        double datePercent = 100d*(mDate.toMillis(false)%(1000d*60d*60d*24d))/(1000d*60d*60d*24d);
+        double datePercent = 100d*(mDate.hour*1000*60*60 + mDate.minute*1000*60 + mDate.second*1000)/(1000d*60d*60d*24d);
+        Log.d(TAG, mDate.toMillis(false)+".:");
         Log.d(TAG, mDate.hour+":"+mDate.minute+":"+mDate.second);
         int x = getNormalizedWidth(136);
         int y = getNormalizedHeight(120);

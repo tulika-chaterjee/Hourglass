@@ -5,9 +5,13 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -21,11 +25,13 @@ public abstract class HourglassLaunchActivity extends AppCompatActivity
         implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
 
     private GoogleApiClient gapi;
+    private String TAG = "hourglassLaunchActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(getLayout());
+        Log.d(TAG, "oncreate launch activity");
         if(getIssueTracker().isEmpty()) {
             findViewById(R.id.issue_tracker).setVisibility(View.GONE);
         } else {
@@ -78,9 +84,17 @@ public abstract class HourglassLaunchActivity extends AppCompatActivity
     public void onPause() {
         super.onPause();
         //Send a notification to the watch for quick opening
-        ConnectionUtils.NodeManager nodeManager = new ConnectionUtils.NodeManager(gapi, "", "/mobile-listener-service");
-        nodeManager.sendMessage(getString(R.string.hourglass_message_mobile_stop));
-        gapi.disconnect();
+        Log.d(TAG, "OnPause");
+        final ConnectionUtils.NodeManager nodeManager = new ConnectionUtils.NodeManager(gapi);
+        nodeManager.broadcast("mobile-off", "/mobile-listener-service");
+        Handler h = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                gapi.disconnect();
+            }
+        };
+        h.sendEmptyMessageDelayed(0, 100);
     }
 
     public abstract String getIssueTracker();
@@ -92,8 +106,9 @@ public abstract class HourglassLaunchActivity extends AppCompatActivity
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        ConnectionUtils.NodeManager nodeManager = new ConnectionUtils.NodeManager(gapi, "", "/mobile-listener-service");
-        nodeManager.sendMessage(getString(R.string.hourglass_message_mobile_resume));
+        Log.d(TAG, "onConnected");
+        final ConnectionUtils.NodeManager nodeManager = new ConnectionUtils.NodeManager(gapi);
+        nodeManager.broadcast("mobile-on", "/mobile-listener-service");
     }
 
     @Override
@@ -103,6 +118,6 @@ public abstract class HourglassLaunchActivity extends AppCompatActivity
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
+        Log.e(TAG, "Cannot connect to GPS: "+connectionResult.getErrorMessage());
     }
 }

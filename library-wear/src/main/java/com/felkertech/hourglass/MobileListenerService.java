@@ -1,7 +1,9 @@
 package com.felkertech.hourglass;
 
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.WallpaperManager;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.support.v4.app.NotificationCompat;
@@ -23,13 +25,14 @@ public class MobileListenerService extends WearableListenerService {
         String message = new String(messageEvent.getData());
 
         if(message.contains("mobile-on")) {
-            Intent intent = new Intent(Intent.ACTION_SET_WALLPAPER);
-    //        new Intent(WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER);
-            intent = Intent.createChooser(intent, "Select Watchface");
+//            Intent intent = new Intent(Intent.ACTION_SET_WALLPAPER);
+            Intent intent = new Intent(WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER);
+//            intent = Intent.createChooser(intent, "Select Watchface");
             PendingIntent pi = PendingIntent.getActivity(this, 0, intent, 0);
             NotificationCompat.Builder mBuilder =
                     new NotificationCompat.Builder(this)
                             .setSmallIcon(R.drawable.ic_full_cancel)
+                            .setPriority(Notification.PRIORITY_MAX)
                             .extend(new NotificationCompat.WearableExtender()
                                 .setHintHideIcon(true)
                                 .setBackground(BitmapFactory.decodeResource(getResources(), R.drawable.pattern))

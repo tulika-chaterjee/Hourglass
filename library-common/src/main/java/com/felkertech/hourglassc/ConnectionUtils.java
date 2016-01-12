@@ -50,6 +50,10 @@ public class ConnectionUtils {
         private GoogleApiClient mGoogleApiClient;
         private String CAPABILITY;
         private String PATH;
+        private String TAG = "hourglass_connectUtils";
+        public NodeManager(final GoogleApiClient mGoogleApiClient) {
+            this.mGoogleApiClient = mGoogleApiClient;
+        }
         public NodeManager(final GoogleApiClient mGoogleApiClient, String CAPABILITY, String PATH) {
             this.mGoogleApiClient = mGoogleApiClient;
             this.CAPABILITY = CAPABILITY;
@@ -57,6 +61,7 @@ public class ConnectionUtils {
             setupNode();
         }
         private void setupNode() {
+            Log.d(TAG, "Setting up the node mananger");
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -82,22 +87,33 @@ public class ConnectionUtils {
             }).start();
         }
         private void updateTranscriptionCapability(CapabilityInfo capabilityInfo) {
+            if(capabilityInfo != null)
+                Log.d(TAG, "Capability info: "+capabilityInfo.toString());
+            else {
+                Log.d(TAG, "No capability info");
+                return;
+            }
             Set<Node> connectedNodes = capabilityInfo.getNodes();
 
             transcriptionNodeId = pickBestNodeId(connectedNodes);
         }
         private String pickBestNodeId(Set<Node> nodes) {
+            Log.d(TAG, "Found "+nodes.size());
             String bestNodeId = null;
             // Find a nearby node or pick one arbitrarily
             for (Node node : nodes) {
+                Log.d(TAG, "Node "+node.getDisplayName()+", "+node.getId()+", "+node.isNearby());
                 if (node.isNearby()) {
+                    Log.d(TAG, node.getDisplayName()+" is nearby");
                     return node.getId();
                 }
                 bestNodeId = node.getId();
             }
+            Log.d(TAG, "Picking node "+bestNodeId);
             return bestNodeId;
         }
         public void sendMessage(String msg) {
+            Log.d(TAG, "Sending msg "+msg);
             byte[] voiceData = msg.getBytes();
             if (transcriptionNodeId != null) {
                 Wearable.MessageApi.sendMessage(mGoogleApiClient, transcriptionNodeId,
@@ -108,12 +124,16 @@ public class ConnectionUtils {
                                 MessageApi.SendMessageResult sendMessageResult = (MessageApi.SendMessageResult) result;
                                 if (!sendMessageResult.getStatus().isSuccess()) {
                                     // Failed to send message
+                                    Log.e(TAG, "Failed to send message");
+                                } else {
+                                    Log.d(TAG, "Successful message sending to "+transcriptionNodeId);
                                 }
                             }
                         }
                 );
             } else {
                 // Unable to retrieve node with transcription capability
+                Log.e(TAG, "Unable to retrieve node with transcription capability");
             }
         }
         private Collection<String> getNodes() {
@@ -124,6 +144,40 @@ public class ConnectionUtils {
                 results.add(node.getId());
             }
             return results;
+        }
+        public boolean foundNode() {
+            return transcriptionNodeId != null;
+        }
+        public void broadcast(final String msg) {
+            broadcast(msg, PATH);
+        }
+        public void broadcast(final String msg, final String path) {
+            final byte[] voiceData = msg.getBytes();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    NodeApi.GetConnectedNodesResult nodes =
+                            Wearable.NodeApi.getConnectedNodes(mGoogleApiClient).await();
+                    for (Node node : nodes.getNodes()) {
+                        Log.d(TAG, "Node "+node.getDisplayName()+", "+node.getId()+", "+node.isNearby());
+                        Wearable.MessageApi.sendMessage(mGoogleApiClient, node.getId(),
+                                path, voiceData).setResultCallback(
+                                new ResultCallback() {
+                                    @Override
+                                    public void onResult(Result result) {
+                                        MessageApi.SendMessageResult sendMessageResult = (MessageApi.SendMessageResult) result;
+                                        if (!sendMessageResult.getStatus().isSuccess()) {
+                                            // Failed to send message
+                                            Log.e(TAG, "Failed to broadcast message");
+                                        } else {
+                                            Log.d(TAG, "Broadcasted "+msg);
+                                        }
+                                    }
+                                }
+                        );
+                    }
+                }
+            }).start();
         }
     }
 

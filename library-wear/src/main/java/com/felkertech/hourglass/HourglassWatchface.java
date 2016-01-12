@@ -280,7 +280,7 @@ public abstract class HourglassWatchface extends CanvasWatchFaceService {
                 mTime.setToNow();
             }
             // Draw the background.
-            if (isInAmbientMode()) {
+            if (isAmbient()) {
                 canvas.drawColor(Color.BLACK);
             }
             onUpdate(canvas, mTime);

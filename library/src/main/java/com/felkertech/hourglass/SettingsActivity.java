@@ -1,12 +1,16 @@
 package com.felkertech.hourglass;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.widget.SeekBar;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.felkertech.materialpreferencesactivity.MaterialPreferencesActivity;
+import com.felkertech.settingsmanager.SettingsManager;
 import com.felkertech.wearsettingsmanager.WearSettingsManager;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -20,14 +24,19 @@ public class SettingsActivity extends MaterialPreferencesActivity
         implements GoogleApiClient.ConnectionCallbacks, OnConnectionFailedListener {
     private WearSettingsManager sm;
     private GoogleApiClient gapi;
+    private String TAG = "SettingsActivity";
 
     @Override
     public void onPreferencesLoaded(MaterialPreferencesFragment fragment) {
-        sm = new WearSettingsManager(this);
+        Log.d(TAG, "load prefs");
+        if(sm == null)
+            sm = new WearSettingsManager(this);
         gapi = new GoogleApiClient.Builder(this)
                 .addApiIfAvailable(Wearable.API)
                 .build();
         gapi.connect();
+
+        Log.d(TAG, "Sm "+sm.toString());
 
         fragment.bindSummary(R.string.hourglass_date_format, RADIO_LIST_PREF, R.array.hourglass_date_format_list);
         fragment.bindSummary(R.string.hourglass_time_format, RADIO_LIST_PREF, R.array.hourglass_time_format_list);
@@ -141,7 +150,11 @@ public class SettingsActivity extends MaterialPreferencesActivity
             fragment.findPreference(getString(i)).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    sm.pushData();
+                    try {
+                        sm.pushData();
+                    } catch(Exception e) {
+                        Log.e(TAG, "Null sm");
+                    }
                     return false;
                 }
             });
@@ -162,9 +175,30 @@ public class SettingsActivity extends MaterialPreferencesActivity
     }
 
     @Override
+    public SettingsManager getSettingsManager() {
+        if(sm == null) {
+            sm = new WearSettingsManager(this);
+        }
+        Log.d(TAG, sm.toString());
+        return sm;
+    }
+
+    @Override
+    public Activity getActivity() {
+        return SettingsActivity.this;
+    }
+
+    @Override
+    public Class getStringsClass() {
+        return R.string.class;
+    }
+
+    @Override
     public void onConnected(@Nullable Bundle bundle) {
+        Log.d(TAG, "Connected");
         sm.setSyncableSettingsManager(gapi);
         sm.pushData();
+        Log.d(TAG, "Push data");
     }
 
     @Override
@@ -174,6 +208,6 @@ public class SettingsActivity extends MaterialPreferencesActivity
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
+        Log.e(TAG, "Cannot connect to GPS: "+connectionResult.getErrorMessage());
     }
 }
