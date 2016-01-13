@@ -34,6 +34,7 @@ import android.support.wearable.watchface.WatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.Time;
 import android.view.SurfaceHolder;
+import android.view.WindowInsets;
 
 import com.felkertech.settingsmanager.SettingsManager;
 
@@ -76,7 +77,7 @@ public abstract class HourglassWatchface extends CanvasWatchFaceService {
 
     public abstract void onStart();
     public abstract void onEnd();
-    public abstract void onTap(int taps);
+    public abstract void onTap(int taps, int x, int y);
     public abstract void onUpdate(Canvas canvas, Time mDate);
 
     public boolean isAmbient() {
@@ -109,6 +110,21 @@ public abstract class HourglassWatchface extends CanvasWatchFaceService {
         Date d = new Date(mEngine.mTime.toMillis(false));
         SimpleDateFormat sdf = new SimpleDateFormat(sm.getString(R.string.hourglass_time_format));
         return sdf.format(d);
+    }
+    public boolean isCardPeeking() {
+        return getCardHeight() > 0;
+    }
+    public int getCardHeight() {
+        return mEngine.getPeekCardPosition().height();
+    }
+    public boolean isRound() {
+        return mEngine.mIsRound;
+    }
+    public boolean hasChin() {
+        return getChinSize() > 0;
+    }
+    public int getChinSize() {
+        return mEngine.mChinSize;
     }
 
     private static class EngineHandler extends Handler {
@@ -147,6 +163,8 @@ public abstract class HourglassWatchface extends CanvasWatchFaceService {
         };
         int mTapCount;
         Canvas mCanvas;
+        boolean mIsRound;
+        int mChinSize;
 
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we
@@ -257,7 +275,7 @@ public abstract class HourglassWatchface extends CanvasWatchFaceService {
                 case WatchFaceService.TAP_TYPE_TAP:
                     // The user has completed the tap gesture.
                     mTapCount++;
-                    onTap(mTapCount);
+                    onTap(mTapCount, x, y);
                     break;
             }
             invalidate();
@@ -316,6 +334,13 @@ public abstract class HourglassWatchface extends CanvasWatchFaceService {
                         - (timeMs % INTERACTIVE_UPDATE_RATE_MS);
                 mUpdateTimeHandler.sendEmptyMessageDelayed(MSG_UPDATE_TIME, delayMs);
             }
+        }
+
+        @Override
+        public void onApplyWindowInsets(WindowInsets insets) {
+            super.onApplyWindowInsets(insets);
+            mIsRound = insets.isRound();
+            mChinSize = insets.getSystemWindowInsetBottom();
         }
     }
 }

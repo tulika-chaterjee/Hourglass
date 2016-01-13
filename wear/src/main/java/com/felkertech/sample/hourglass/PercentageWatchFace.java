@@ -52,7 +52,7 @@ public class PercentageWatchFace extends HourglassWatchface {
     }
 
     @Override
-    public void onTap(int taps) {
+    public void onTap(int taps, int x, int y) {
         switch(taps%3) {
             case 0:
                 mFadePaint.setColor(getResources().getColor(android.R.color.holo_purple));

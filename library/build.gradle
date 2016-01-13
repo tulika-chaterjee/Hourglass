@@ -23,5 +23,5 @@ dependencies {
     compile project(':library-common')
     testCompile 'junit:junit:4.12'
     compile 'com.github.fleker:materialpreferencesactivity:0.1.2'
-    compile 'com.github.fleker:settingsmanager-wear:1.1.2'
+    compile 'com.github.fleker:settingsmanager-wear:+'
 }
