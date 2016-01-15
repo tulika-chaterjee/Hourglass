@@ -43,6 +43,9 @@ public class MobileListenerService extends WearableListenerService {
             mNotifyMgr.notify(NOTIFICATION_ID, mBuilder.build());
         } else if(message.contains("mobile-off")) {
             mNotifyMgr.cancel(NOTIFICATION_ID);
+        } else if(messageEvent.getPath().contains("mobile-battery")) {
+            SettingsManager sm = new SettingsManager(this);
+            sm.setInt(R.string.hourglass_data_phone_battery, Integer.parseInt(message));
         }
     }
 }

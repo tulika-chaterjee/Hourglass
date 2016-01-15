@@ -61,4 +61,6 @@
 
     <string name="hourglass_message_mobile_resume">mobile-on</string>
     <string name="hourglass_message_mobile_stop">mobile-off</string>
+
+    <string name="hourglass_data_phone_battery">PBATTERY</string>
 </resources>

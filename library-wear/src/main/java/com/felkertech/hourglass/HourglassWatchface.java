@@ -29,14 +29,9 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.wearable.watchface.CanvasWatchFaceService;
-import android.support.wearable.watchface.WatchFaceService;
-import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.Time;
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
-
-import com.felkertech.settingsmanager.SettingsManager;
 
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
@@ -283,6 +278,7 @@ public abstract class HourglassWatchface extends CanvasWatchFaceService {
 
         @Override
         public void onDraw(Canvas canvas, Rect bounds) {
+            sm = new SettingsManager(this);
             mCanvas = canvas;
             // Draw H:MM in ambient mode or H:MM:SS in interactive mode.
             if(sm.getBoolean(R.string.hourglass_debug_mode)) {

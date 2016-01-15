@@ -20,6 +20,7 @@
         android:title="Debug">
         <com.jenzz.materialpreference.SwitchPreference
             android:key="@string/hourglass_debug_mode"
+            android:defaultValue="false"
             android:title="Debug Mode"/>
         <com.jenzz.materialpreference.SwitchPreference
             android:key="@string/hourglass_ambient"
@@ -30,5 +31,11 @@
         <com.jenzz.materialpreference.Preference
             android:key="@string/hourglass_debug_date"
             android:title="Change Date"/>
+    </com.jenzz.materialpreference.PreferenceCategory>
+    <com.jenzz.materialpreference.PreferenceCategory
+        android:title="General">
+        <com.jenzz.materialpreference.Preference
+            android:title="About"
+            android:key="about"/>
     </com.jenzz.materialpreference.PreferenceCategory>
 </PreferenceScreen>
